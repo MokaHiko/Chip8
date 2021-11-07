@@ -7,6 +7,8 @@ const unsigned int START_ADDRESS = 0x200;
 const unsigned int FONTSET_SIZE = 80;
 const unsigned int FONTSET_START_ADDRESS = 0x50;
 const unsigned int STACK_LEVELS = 16;
+const unsigned int VIDEO_HEIGHT = 32; 
+const unsigned int VIDEO_WIDTH = 64;
 class Chip8
 {
 public:
@@ -21,11 +23,13 @@ public:
 	uint8_t	 keypad[16];
 	uint32_t video[64 * 32];
 	uint16_t opcode{};
-	
-	std::default_random_engine randGen;
-	//std::uniform_int_distribution<uint8_t> randByte;
 
 	Chip8();
+	~Chip8();
+private:
+	std::default_random_engine randGen;
+	std::uniform_int_distribution<uint8_t> randByte;
+
 	void LoadROM(char const* filename);
 	
 	//CLS : clear display
@@ -90,5 +94,45 @@ public:
 
 	//Bnnn : Jump to location nnn + V0;
 	void OP_Bnnn();
+	
+	//Cxkk : Vx = random byte AND kk.
+	void OP_Cxkk();
+
+	//Dxyn : display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
+	void OP_Dxyn();
+
+	//Ex9E : skip next instruction if key with the value of Vx is pressed
+	void OP_Ex9E();
+
+	//ExA1 :  skip next instruction if the key with Vx is not pressed
+	void OP_ExA1();
+
+	//Fx07 : set Vx = delay timer value
+	void OP_Fx07();
+
+	//Fx0A : wait for a key press, store the value of the key in Vx.
+	void OP_Fx0A();
+
+	//Fx15 : set delay timer = Vx
+	void OP_Fx15();
+
+	//Fx18 : set sound timer = Vx
+	void OP_Fx18();
+
+	//Fx1E : set I = I + Vx
+	void OP_Fx1E();
+
+	//Fx29 : set I = location of sprite for digix Vx
+	void OP_Fx29();
+
+	//Fx33 :store bcd representation of Vx in memory Locations I, I + 1, and I + 2
+	//the interperter takes the decimal value of Vx and places the hundreds digit in memory at location in I, tens in I +1, ones in I + 2
+	void OP_Fx33();
+	
+	//Fx55 : store registers V0 through Vx in memory starting at location I
+	void OP_Fx55();
+
+	//Fx65 : read registers V0 through Vx from memory starting at location I
+	void OP_Fx65();
 };
 

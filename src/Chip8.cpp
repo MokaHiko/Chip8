@@ -39,7 +39,11 @@ Chip8::Chip8()
 	}
 	
 	//initialize RNG
-	//randByte = std::uniform_int_distribution<uint8_t>(0, 255U);
+	randByte = std::uniform_int_distribution<uint8_t>(0, 255U);
+}
+Chip8::~Chip8()
+{
+
 }
 void Chip8::LoadROM(char const* filename)
 {
@@ -258,6 +262,160 @@ void Chip8::OP_Bnnn()
 {
 	uint16_t address = opcode & 0x0FFFu;
 	pc = registers[0] + address;
+}
+
+void Chip8::OP_Cxkk()
+{
+	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+	uint8_t byte = opcode & 0x00FFu; 
+
+	registers[Vx] = randByte(randGen) & byte;
+
+}
+
+void Chip8::OP_Dxyn()
+{
+	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+	uint8_t Vy = (opcode & 0x00F0u) >> 4u;
+	uint8_t height = opcode & 0x000Fu;	//n number of rows in sprite
+	
+	//Wrap if going beyond the screen boudnaries
+	uint8_t xPos = registers[Vx] % VIDEO_WIDTH;
+	uint8_t yPos = registers[Vy] % VIDEO_HEIGHT;
+
+	registers[0xF] = 0; // set collision initial state to false
+
+	for (unsigned int row = 0; row < height; ++row)
+	{
+		uint8_t spriteByte = memory[index + row];	//get row of sprite 
+		for (unsigned int col = 0; col < 8; ++col)
+		{
+			uint8_t spritePixel = spriteByte & (0x80u >> col); 
+
+			//yPos (local y), row (pixel y), [local y * pixel y] * width = screen space  
+			uint32_t* screenPixel = &video[(yPos + row) * VIDEO_WIDTH + (xPos + col)];
+
+			if (spritePixel)
+			{
+				if (*screenPixel == 0xFFFFFFFF)
+				{
+					registers[0xF] = 1; // collision detected
+				}
+
+				//Screen XOR with the sprite pixel 32 bit versions
+				*screenPixel ^= 0xFFFFFFFF;
+			}
+		}
+	}
+}
+
+void Chip8::OP_Ex9E()
+{
+	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+	uint8_t key = registers[Vx];
+
+	if (keypad[key])
+	{
+		pc += 2;
+	}
+}
+
+void Chip8::OP_ExA1()
+{
+	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+	uint8_t key = registers[key];
+
+	if (!keypad[key])
+	{
+		pc += 2;
+	}
+}
+
+void Chip8::OP_Fx07()
+{
+	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+	registers[Vx] = delayTimer;
+}
+
+void Chip8::OP_Fx0A()
+{
+	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+	bool pressed = false;
+
+	for (unsigned int i = 0; i < 15; i++)
+	{
+		if (keypad[i])
+		{
+			registers[Vx] = i;
+			pressed = true;
+		}
+	}
+
+	if (!pressed)
+		pc -= 2;
+}
+
+void Chip8::OP_Fx15()
+{
+	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
+	delayTimer = registers[Vx];
+}
+
+void Chip8::OP_Fx18()
+{
+	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
+	soundTimer = registers[Vx];
+}
+
+void Chip8::OP_Fx1E()
+{
+	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+	index += registers[Vx];
+}
+
+void Chip8::OP_Fx29()
+{
+	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+	uint8_t digit = registers[Vx];
+
+	index = FONTSET_START_ADDRESS + (5 * digit);
+}
+
+void Chip8::OP_Fx33()
+{
+	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+	uint8_t value = registers[Vx];
+
+	//Ones palce
+	memory[index + 2] = value % 10;
+	value /= 10;
+
+	//Tens place
+	memory[index + 1] = value % 10;
+	value /= 10;
+
+	//Hundreds place
+	memory[index] = value % 10;
+}
+
+void Chip8::OP_Fx55()
+{
+	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+	for (uint8_t i = 0; i <= Vx; ++i)
+	{
+		memory[index + i] = registers[i];
+	}
+}
+
+void Chip8::OP_Fx65()
+{
+	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+	for (uint8_t i = 0; i <= Vx; ++i)
+	{
+		registers[i] = memory[index + i];
+	}
 }
 
 void Chip8::OP_1nnn()

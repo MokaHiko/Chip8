@@ -1,2 +1,17 @@
-﻿  Main.cpp
-  Chip8.vcxproj -> C:\Users\User\Desktop\CS\Emulation\Chip8\Debug\Chip8.exe
+﻿  Chip8.cpp
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\include\random(1863,5): error C2338: invalid template argument for uniform_int_distribution: N4659 29.6.1.1 [rand.req.genl]/1e requires one of short, int, long, long long, unsigned short, unsigned int, unsigned long, or unsigned long long
+C:\Users\User\Desktop\CS\Emulation\Chip8\src\Chip8.h(33): message : see reference to class template instantiation 'std::uniform_int_distribution<uint8_t>' being compiled
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\include\random(1863,5): error C2338: note: char, signed char, unsigned char, char8_t, int8_t, and uint8_t are not allowed
+C:\Users\User\Desktop\CS\Emulation\Chip8\src\Chip8.cpp(30,68): warning C4244: 'argument': conversion from '_Rep' to 'unsigned int', possible loss of data
+          with
+          [
+              _Rep=std::chrono::system_clock::rep
+          ]
+C:\Users\User\Desktop\CS\Emulation\Chip8\src\Chip8.cpp(57,28): warning C4244: 'initializing': conversion from 'std::streamoff' to 'unsigned int', possible loss of data
+C:\Users\User\Desktop\CS\Emulation\Chip8\src\Chip8.cpp(218,16): warning C4552: '>=': result of expression not used
+C:\Users\User\Desktop\CS\Emulation\Chip8\src\Chip8.cpp(241,16): warning C4552: '<=': result of expression not used
+  Main.cpp
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\include\random(1863,5): error C2338: invalid template argument for uniform_int_distribution: N4659 29.6.1.1 [rand.req.genl]/1e requires one of short, int, long, long long, unsigned short, unsigned int, unsigned long, or unsigned long long
+C:\Users\User\Desktop\CS\Emulation\Chip8\src\Chip8.h(33): message : see reference to class template instantiation 'std::uniform_int_distribution<uint8_t>' being compiled
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\include\random(1863,5): error C2338: note: char, signed char, unsigned char, char8_t, int8_t, and uint8_t are not allowed
+  Generating Code...
