@@ -1,11 +1,1 @@
-﻿  Chip8.cpp
-C:\Users\User\Desktop\CS\Emulation\Chip8\src\Chip8.cpp(30,68): warning C4244: 'argument': conversion from '_Rep' to 'unsigned int', possible loss of data
-          with
-          [
-              _Rep=std::chrono::system_clock::rep
-          ]
-C:\Users\User\Desktop\CS\Emulation\Chip8\src\Chip8.cpp(306,16): warning C4552: '>=': result of expression not used
-C:\Users\User\Desktop\CS\Emulation\Chip8\src\Chip8.cpp(329,16): warning C4552: '<=': result of expression not used
-C:\Users\User\Desktop\CS\Emulation\Chip8\src\Chip8.cpp(361,24): warning C4305: '=': truncation from 'int' to 'uint8_t'
-C:\Users\User\Desktop\CS\Emulation\Chip8\src\Chip8.cpp(361,18): warning C4309: '=': truncation of constant value
-  Chip8.vcxproj -> C:\Users\User\Desktop\CS\Emulation\Chip8\x64\Debug\Chip8.exe
+﻿  Chip8.vcxproj -> C:\Users\User\Desktop\CS\Emulation\Chip8\x64\Debug\Chip8.exe

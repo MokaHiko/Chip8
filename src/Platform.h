@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+
 class SDL_Window;
 class SDL_Renderer; 
 class SDL_Texture;

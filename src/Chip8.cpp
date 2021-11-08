@@ -5,6 +5,11 @@
 #include <cstring>
 #include <fstream>
 #include <random>
+#include <iostream>
+
+const unsigned int FONTSET_SIZE = 80;
+const unsigned int FONTSET_START_ADDRESS = 0x50;
+const unsigned int START_ADDRESS = 0x200;
 
 unsigned fontset[FONTSET_SIZE] = 
 	{
@@ -85,14 +90,10 @@ Chip8::Chip8()
 	tableF[0x55] = &Chip8::OP_Fx55;
 	tableF[0x65] = &Chip8::OP_Fx65;
 }
-Chip8::~Chip8()
-{
-
-}
 void Chip8::LoadROM(char const* filename)
 {
 	//open the file as s tream of binary and move the file pointer to the end
-	std::ifstream file(filename, std::ios::binary || std::ios::ate);
+	std::ifstream file(filename, std::ios::binary | std::ios::ate);
 
 	if (file.is_open())
 	{
@@ -106,6 +107,7 @@ void Chip8::LoadROM(char const* filename)
 			file.close();
 
 		//load the ROM contents into the Chip8's memory, starting at 0x200;
+			std::cout << "ROM Loaded of size: " << size << std::endl;
 			for (long i = 0; i < size; ++i)
 			{
 				memory[START_ADDRESS + i] = buffer[i];
@@ -114,26 +116,30 @@ void Chip8::LoadROM(char const* filename)
 			//free the buffer
 			delete[] buffer;
 	}
+	else
+	{
+		std::cout << "Failed to Load ROM" << std::endl;
+	}
 }
 
 void Chip8::Cycle()
 {
-	//Fetch
-	opcode = (memory[pc] << 8u) | memory[pc + 1]; 
-
-	//Increment the PC before we execute anyting
+	// Fetch
+	opcode = (memory[pc] << 8u) | memory[pc + 1];
+	if (opcode != 0)
+	// Increment the PC before we execute anything
 	pc += 2;
 
-	//Decode and Execute
+	// Decode and Execute
 	((*this).*(table[(opcode & 0xF000u) >> 12u]))();
 
-	//Decrement the delay timer if it's been set
+	// Decrement the delay timer if it's been set
 	if (delayTimer > 0)
 	{
-		--delayTimer; 
+		--delayTimer;
 	}
 
-	//Decrement the sound timer if it's been set
+	// Decrement the sound timer if it's been set
 	if (soundTimer > 0)
 	{
 		--soundTimer;
@@ -144,21 +150,25 @@ void Chip8::Table0()
 {
 	((*this).*(table0[opcode & 0x000Fu]))();
 }
+
 void Chip8::Table8()
 {
-	((*this).*(table8[opcode & 0x000fu]))();
+	((*this).*(table8[opcode & 0x000Fu]))();
 }
+
 void Chip8::TableE()
 {
-	((*this).*(tableE[opcode & 0x000fu]))();
+	((*this).*(tableE[opcode & 0x000Fu]))();
 }
+
 void Chip8::TableF()
 {
-	((*this).*(tableF[opcode & 0x000fu]))();
+	((*this).*(tableF[opcode & 0x00FFu]))();
 }
 
-void Chip8::OP_NULL(){}
-
+//Chip Codes
+void Chip8::OP_NULL()
+{}
 
 void Chip8::OP_00E0()
 {
@@ -171,19 +181,26 @@ void Chip8::OP_00EE()
 	pc = stack[sp];
 }
 
+void Chip8::OP_1nnn()
+{
+	uint16_t address = opcode & 0x0FFFu;
+
+	pc = address;
+}
+
 void Chip8::OP_2nnn()
 {
 	uint16_t address = opcode & 0x0FFFu;
 
 	stack[sp] = pc;
 	++sp;
-	pc = address; 
+	pc = address;
 }
 
 void Chip8::OP_3xkk()
 {
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
-	uint8_t byte = opcode & 0x00FFu; 
+	uint8_t byte = opcode & 0x00FFu;
 
 	if (registers[Vx] == byte)
 	{
@@ -193,8 +210,8 @@ void Chip8::OP_3xkk()
 
 void Chip8::OP_4xkk()
 {
-	uint8_t Vx = (opcode & 0xF00u) >> 8u;
-	uint8_t byte = (opcode & 0x00FFu); 
+	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+	uint8_t byte = opcode & 0x00FFu;
 
 	if (registers[Vx] != byte)
 	{
@@ -217,14 +234,14 @@ void Chip8::OP_6xkk()
 {
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
 	uint8_t byte = opcode & 0x00FFu;
-	
+
 	registers[Vx] = byte;
 }
 
 void Chip8::OP_7xkk()
 {
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
-	uint8_t byte = opcode & 0x00FFu; 
+	uint8_t byte = opcode & 0x00FFu;
 
 	registers[Vx] += byte;
 }
@@ -251,7 +268,6 @@ void Chip8::OP_8xy2()
 	uint8_t Vy = (opcode & 0x00F0u) >> 4u;
 
 	registers[Vx] &= registers[Vy];
-
 }
 
 void Chip8::OP_8xy3()
@@ -267,16 +283,17 @@ void Chip8::OP_8xy4()
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
 	uint8_t Vy = (opcode & 0x00F0u) >> 4u;
 
-	uint16_t sum = registers[Vx] + registers[Vy]; 
-	
+	uint16_t sum = registers[Vx] + registers[Vy];
+
 	if (sum > 255U)
 	{
-		registers[0XF] = 1;
+		registers[0xF] = 1;
 	}
 	else
 	{
 		registers[0xF] = 0;
 	}
+
 	registers[Vx] = sum & 0xFFu;
 }
 
@@ -284,8 +301,8 @@ void Chip8::OP_8xy5()
 {
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
 	uint8_t Vy = (opcode & 0x00F0u) >> 4u;
-	
-	if (registers[Vx] > Vy)
+
+	if (registers[Vx] > registers[Vy])
 	{
 		registers[0xF] = 1;
 	}
@@ -293,25 +310,26 @@ void Chip8::OP_8xy5()
 	{
 		registers[0xF] = 0;
 	}
-	
-	registers[Vx] = registers[Vx] - registers[Vy];
+
+	registers[Vx] -= registers[Vy];
 }
 
 void Chip8::OP_8xy6()
 {
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
 
-	//save LSB in VF
-	registers[0xF] = registers[Vx] & 0x1u;
-	registers[Vx] >= 1;
+	// Save LSB in VF
+	registers[0xF] = (registers[Vx] & 0x1u);
+
+	registers[Vx] >>= 1;
 }
 
 void Chip8::OP_8xy7()
 {
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
 	uint8_t Vy = (opcode & 0x00F0u) >> 4u;
-	
-	if (registers[Vy] > Vx)
+
+	if (registers[Vy] > registers[Vx])
 	{
 		registers[0xF] = 1;
 	}
@@ -319,21 +337,25 @@ void Chip8::OP_8xy7()
 	{
 		registers[0xF] = 0;
 	}
+
 	registers[Vx] = registers[Vy] - registers[Vx];
 }
 
 void Chip8::OP_8xyE()
 {
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
-	registers[0xF] = registers[Vx] & 0x80u >> 7u;
-	registers[Vx] <= 1;
+
+	// Save MSB in VF
+	registers[0xF] = (registers[Vx] & 0x80u) >> 7u;
+
+	registers[Vx] <<= 1;
 }
 
 void Chip8::OP_9xy0()
 {
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
 	uint8_t Vy = (opcode & 0x00F0u) >> 4u;
-	
+
 	if (registers[Vx] != registers[Vy])
 	{
 		pc += 2;
@@ -343,54 +365,56 @@ void Chip8::OP_9xy0()
 void Chip8::OP_Annn()
 {
 	uint16_t address = opcode & 0x0FFFu;
+
 	index = address;
 }
 
 void Chip8::OP_Bnnn()
 {
 	uint16_t address = opcode & 0x0FFFu;
+
 	pc = registers[0] + address;
 }
 
 void Chip8::OP_Cxkk()
 {
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
-	uint8_t byte = opcode & 0x00FFu; 
+	uint8_t byte = opcode & 0x00FFu;
 
-	//registers[Vx] = randByte(randGen) & byte
-	registers[Vx] = 0xFFFF;
+	registers[Vx] = randByte(randGen) >> 8u & byte;
 }
 
 void Chip8::OP_Dxyn()
 {
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
 	uint8_t Vy = (opcode & 0x00F0u) >> 4u;
-	uint8_t height = opcode & 0x000Fu;	//n number of rows in sprite
-	
-	//Wrap if going beyond the screen boudnaries
+	uint8_t height = opcode & 0x000Fu;
+
+	// Wrap if going beyond screen boundaries
 	uint8_t xPos = registers[Vx] % VIDEO_WIDTH;
 	uint8_t yPos = registers[Vy] % VIDEO_HEIGHT;
 
-	registers[0xF] = 0; // set collision initial state to false
+	registers[0xF] = 0;
 
 	for (unsigned int row = 0; row < height; ++row)
 	{
-		uint8_t spriteByte = memory[index + row];	//get row of sprite 
+		uint8_t spriteByte = memory[index + row];
+
 		for (unsigned int col = 0; col < 8; ++col)
 		{
-			uint8_t spritePixel = spriteByte & (0x80u >> col); 
-
-			//yPos (local y), row (pixel y), [local y * pixel y] * width = screen space  
+			uint8_t spritePixel = spriteByte & (0x80u >> col);
 			uint32_t* screenPixel = &video[(yPos + row) * VIDEO_WIDTH + (xPos + col)];
 
+			// Sprite pixel is on
 			if (spritePixel)
 			{
+				// Screen pixel also on - collision
 				if (*screenPixel == 0xFFFFFFFF)
 				{
-					registers[0xF] = 1; // collision detected
+					registers[0xF] = 1;
 				}
 
-				//Screen XOR with the sprite pixel 32 bit versions
+				// Effectively XOR with the sprite pixel
 				*screenPixel ^= 0xFFFFFFFF;
 			}
 		}
@@ -400,6 +424,7 @@ void Chip8::OP_Dxyn()
 void Chip8::OP_Ex9E()
 {
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
 	uint8_t key = registers[Vx];
 
 	if (keypad[key])
@@ -411,6 +436,7 @@ void Chip8::OP_Ex9E()
 void Chip8::OP_ExA1()
 {
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
 	uint8_t key = registers[Vx];
 
 	if (!keypad[key])
@@ -422,25 +448,82 @@ void Chip8::OP_ExA1()
 void Chip8::OP_Fx07()
 {
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
 	registers[Vx] = delayTimer;
 }
 
 void Chip8::OP_Fx0A()
 {
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
-	bool pressed = false;
 
-	for (unsigned int i = 0; i < 15; i++)
+	if (keypad[0])
 	{
-		if (keypad[i])
-		{
-			registers[Vx] = i;
-			pressed = true;
-		}
+		registers[Vx] = 0;
 	}
-
-	if (!pressed)
+	else if (keypad[1])
+	{
+		registers[Vx] = 1;
+	}
+	else if (keypad[2])
+	{
+		registers[Vx] = 2;
+	}
+	else if (keypad[3])
+	{
+		registers[Vx] = 3;
+	}
+	else if (keypad[4])
+	{
+		registers[Vx] = 4;
+	}
+	else if (keypad[5])
+	{
+		registers[Vx] = 5;
+	}
+	else if (keypad[6])
+	{
+		registers[Vx] = 6;
+	}
+	else if (keypad[7])
+	{
+		registers[Vx] = 7;
+	}
+	else if (keypad[8])
+	{
+		registers[Vx] = 8;
+	}
+	else if (keypad[9])
+	{
+		registers[Vx] = 9;
+	}
+	else if (keypad[10])
+	{
+		registers[Vx] = 10;
+	}
+	else if (keypad[11])
+	{
+		registers[Vx] = 11;
+	}
+	else if (keypad[12])
+	{
+		registers[Vx] = 12;
+	}
+	else if (keypad[13])
+	{
+		registers[Vx] = 13;
+	}
+	else if (keypad[14])
+	{
+		registers[Vx] = 14;
+	}
+	else if (keypad[15])
+	{
+		registers[Vx] = 15;
+	}
+	else
+	{
 		pc -= 2;
+	}
 }
 
 void Chip8::OP_Fx15()
@@ -460,6 +543,7 @@ void Chip8::OP_Fx18()
 void Chip8::OP_Fx1E()
 {
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
 	index += registers[Vx];
 }
 
@@ -476,21 +560,22 @@ void Chip8::OP_Fx33()
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
 	uint8_t value = registers[Vx];
 
-	//Ones palce
+	// Ones-place
 	memory[index + 2] = value % 10;
 	value /= 10;
 
-	//Tens place
+	// Tens-place
 	memory[index + 1] = value % 10;
 	value /= 10;
 
-	//Hundreds place
+	// Hundreds-place
 	memory[index] = value % 10;
 }
 
 void Chip8::OP_Fx55()
 {
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
 	for (uint8_t i = 0; i <= Vx; ++i)
 	{
 		memory[index + i] = registers[i];
@@ -500,16 +585,11 @@ void Chip8::OP_Fx55()
 void Chip8::OP_Fx65()
 {
 	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
 	for (uint8_t i = 0; i <= Vx; ++i)
 	{
 		registers[i] = memory[index + i];
 	}
-}
-
-void Chip8::OP_1nnn()
-{
-	uint16_t address = opcode & 0x0FFFu;
-	pc = address;
 }
 
 

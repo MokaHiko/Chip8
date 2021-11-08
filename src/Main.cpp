@@ -1,8 +1,12 @@
-#include<iostream>
-#include<chrono>
-
 #include "Platform.h"
 #include "Chip8.h"
+
+#include<iostream>
+#include<chrono>
+#include<string>
+#include<stdio.h>
+
+
 
 int main(int argc, char** argv)
 {
@@ -11,9 +15,10 @@ int main(int argc, char** argv)
 		std::cerr << "Usage: " << argv[0] << "<Scale> <Delay> <Rom>\n";
 		std::exit(EXIT_FAILURE);
 	}
-	int videoScale = std::atoi(argv[1]);
-	int cycleDelay = std::atoi(argv[2]);
+	int videoScale = std::stoi(argv[1]);
+	int cycleDelay = std::stoi(argv[2]);
 	char const* romFilename = argv[3];
+	std::cout << romFilename << std::endl;
 
 	Platform platform("Chip-8 Emulator", VIDEO_WIDTH * videoScale, VIDEO_HEIGHT * videoScale, VIDEO_WIDTH, VIDEO_HEIGHT);
 	

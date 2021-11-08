@@ -293,5 +293,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="src\SDL2.dll" />
+    <None Include="x64\Debug\Test_01.ch8" />
+    <None Include="src\test1.ch8" />
+    <None Include="x64\Debug\Tetris.ch8" />
   </ItemGroup>
 </Project>

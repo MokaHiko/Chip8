@@ -118,6 +118,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)src\Libraries\SDL2\include</AdditionalIncludeDirectories>
       <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -136,6 +137,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)src\Libraries\SDL2\include</AdditionalIncludeDirectories>
       <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -243,6 +245,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="src\SDL2.dll" />
+    <None Include="src\test1.ch8" />
+    <None Include="x64\Debug\Test_01.ch8" />
+    <None Include="x64\Debug\Tetris.ch8" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
