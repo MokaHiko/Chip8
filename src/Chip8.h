@@ -9,29 +9,29 @@ const unsigned int FONTSET_START_ADDRESS = 0x50;
 const unsigned int STACK_LEVELS = 16;
 const unsigned int VIDEO_HEIGHT = 32; 
 const unsigned int VIDEO_WIDTH = 64;
+
 class Chip8
 {
 public:
 	uint8_t	 registers[16];
 	uint8_t	 memory[4096];
-	uint16_t index;
-	uint16_t pc;
-	uint16_t stack[STACK_LEVELS];
-	uint8_t	 sp;
-	uint8_t	 delayTimer;
-	uint8_t	 soundTimer;
+	uint16_t index{};
+	uint16_t pc{};
+	uint16_t stack[STACK_LEVELS]{};
+	uint8_t	 sp{};
+	uint8_t	 delayTimer{};
+	uint8_t	 soundTimer{};
 	uint8_t	 keypad[16];
 	uint32_t video[64 * 32];
 	uint16_t opcode{};
 
 	Chip8();
 	~Chip8();
-private:
-	std::default_random_engine randGen;
-	std::uniform_int_distribution<uint8_t> randByte;
 
 	void LoadROM(char const* filename);
-	
+
+	void Cycle();
+private:
 	//CLS : clear display
 	void OP_00E0();
 
@@ -134,5 +134,21 @@ private:
 
 	//Fx65 : read registers V0 through Vx from memory starting at location I
 	void OP_Fx65();
+
+	std::default_random_engine randGen;
+	//std::uniform_int_distribution<uint8_t> randByte;
+
+	void Table0();
+	void Table8();
+	void TableE();
+	void TableF();
+	void OP_NULL();
+
+	typedef void (Chip8::*Chip8Func)();
+	Chip8Func table [0xF  + 1]{ &Chip8::OP_NULL };
+	Chip8Func table0[0xE  + 1]{ &Chip8::OP_NULL };
+	Chip8Func table8[0xE  + 1]{ &Chip8::OP_NULL };
+	Chip8Func tableE[0xE  + 1]{ &Chip8::OP_NULL };
+	Chip8Func tableF[0x65 + 1]{ &Chip8::OP_NULL };
 };
 
